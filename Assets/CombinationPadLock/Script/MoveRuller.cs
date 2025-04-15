@@ -89,6 +89,17 @@ public class MoveRuller : MonoBehaviour
 
     }
 
+    public void AdjustRollerNumber(int index, int delta)
+    {
+        _numberArray[index] += delta;
+
+        if (_numberArray[index] > 9)
+            _numberArray[index] = 0;
+        else if (_numberArray[index] < 0)
+            _numberArray[index] = 9;
+    }
+
+
     void RotateRullers()
     {
         if (Input.GetKeyDown(KeyCode.W))
