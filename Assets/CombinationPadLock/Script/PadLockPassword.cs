@@ -11,7 +11,7 @@ public class PadLockPassword : MonoBehaviour
 
     private void Awake()
     {
-        _moveRull = FindObjectOfType<MoveRuller>();
+        _moveRull = FindFirstObjectByType<MoveRuller>();
     }
 
     public void Password()
