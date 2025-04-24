@@ -15,7 +15,7 @@ public class PadLockEmissionColor : MonoBehaviour
 
     private void Awake()
     {
-        tb = FindObjectOfType<TimeBlinking>();
+        tb = FindFirstObjectByType<TimeBlinking>();
     }
     void Start()
     {

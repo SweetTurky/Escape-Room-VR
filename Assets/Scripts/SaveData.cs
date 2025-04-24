@@ -1,13 +1,21 @@
 using UnityEngine;
+using System;
 using System.IO;
 
-[System.Serializable]
+[Serializable]
 public class SaveData
 {
-    public int currentRoom;
+    // 0-based index of the current room; if == doorsOpen.Length => Completed
+    public int currentRoomIndex;
+
+    // Player transform
     public float playerX, playerY, playerZ;
     public float playerRotX, playerRotY, playerRotZ;
-    public bool door1Open, door2Open, door3Open;
+
+    // Dynamic array: one element per room’s door state
+    public bool[] doorsOpen;
+
+    // Other game state
     public bool hasKey;
     public float elapsedTime;
 }
@@ -17,40 +25,52 @@ public class SaveSystem : MonoBehaviour
     private static string savePath => Application.persistentDataPath + "/savegame.json";
 
     /// <summary>
-    /// Saves the current game state, player position, and relevant objects.
+    /// Saves the full game state, including dynamic door flags.
     /// </summary>
-    public static void SaveGame(GameStateManager gameStateManager, Transform player, bool door1Open, bool door2Open, bool door3Open, bool hasKey, float elapsedTime)
+    /// <param name="gameStateManager">Your manager (to get room index)</param>
+    /// <param name="player">Player Transform</param>
+    /// <param name="doorsOpen">Array of door-open states (length == number of rooms)</param>
+    /// <param name="hasKey">Whether the player has the key</param>
+    /// <param name="elapsedTime">Total elapsed time</param>
+    public static void SaveGame(
+        GameStateManager gameStateManager,
+        Transform player,
+        bool[] doorsOpen,
+        bool hasKey,
+        float elapsedTime,
+        int currentRoomIndex
+    )
     {
-        SaveData data = new SaveData
+        var data = new SaveData
         {
-            currentRoom = (int)gameStateManager.currentState,
+            currentRoomIndex = currentRoomIndex,
+
             playerX = player.position.x,
             playerY = player.position.y,
             playerZ = player.position.z,
             playerRotX = player.rotation.eulerAngles.x,
             playerRotY = player.rotation.eulerAngles.y,
             playerRotZ = player.rotation.eulerAngles.z,
-            door1Open = door1Open,
-            door2Open = door2Open,
-            door3Open = door3Open,
+
+            doorsOpen = doorsOpen,
             hasKey = hasKey,
             elapsedTime = elapsedTime
         };
 
         try
         {
-            string json = JsonUtility.ToJson(data, true);
+            string json = JsonUtility.ToJson(data, prettyPrint: true);
             File.WriteAllText(savePath, json);
             Debug.Log("Game Saved Successfully!");
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError($"Error Saving Game: {e.Message}");
         }
     }
 
     /// <summary>
-    /// Loads the saved game state if a save file exists.
+    /// Loads the saved game state if it exists, or returns null.
     /// </summary>
     public static SaveData LoadGame()
     {
@@ -65,7 +85,7 @@ public class SaveSystem : MonoBehaviour
             string json = File.ReadAllText(savePath);
             return JsonUtility.FromJson<SaveData>(json);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError($"Error Loading Game: {e.Message}");
             return null;
@@ -73,7 +93,7 @@ public class SaveSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if a save file exists.
+    /// Checks if a save file exists on disk.
     /// </summary>
     public static bool SaveExists()
     {
@@ -81,7 +101,7 @@ public class SaveSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// Deletes the save file, resetting the game progress.
+    /// Deletes the existing save file to reset progress.
     /// </summary>
     public static void DeleteSave()
     {
