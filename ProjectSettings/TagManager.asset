@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 3
   tags:
   - Anchor
+  - Cube
+  - Frustum
+  - Torus
+  - Cylinder
   layers:
   - Default
   - TransparentFX
