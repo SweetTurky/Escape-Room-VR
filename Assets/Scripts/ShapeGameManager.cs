@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -18,6 +19,9 @@ public class ShapeGameManager : MonoBehaviour
 
     [Header("Shape Spawner")]
     public ShapeSpawner shapeSpawner;
+
+    
+    private List<string> remainingTargetShapes = new List<string>();
 
     [Serializable]
     public class Hole
@@ -71,6 +75,10 @@ public class ShapeGameManager : MonoBehaviour
                 hole.shapeModelSpawnPoint
             );
 
+            // Populate the list
+            remainingTargetShapes = holes.Select(h => h.targetShapeName).ToList();
+
+
             // Apply uniform scale reduction
             hole.currentModelInstance.transform.localScale *= 0.25f;
 
@@ -101,6 +109,7 @@ public class ShapeGameManager : MonoBehaviour
     public void HoleCorrect(Hole hole)
     {
         hole.checkmark.SetActive(true);
+        remainingTargetShapes.Remove(hole.targetShapeName);
 
         if (holes.All(h => h.checkmark.activeSelf))
         {
@@ -129,4 +138,23 @@ public class ShapeGameManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
         redCross.SetActive(false);
     }
+
+    public bool HasUnmatchedTargets()
+    {
+        return remainingTargetShapes.Count > 0;
+    }
+
+    public void RespawnRemainingShapes()
+    {
+        shapeSpawner.ClearAllShapes();
+
+        foreach (string shapeName in remainingTargetShapes)
+        {
+            shapeSpawner.SpawnShape(shapeName);
+        }
+
+        Debug.Log("Respawned remaining shapes.");
+    }
+
+
 }

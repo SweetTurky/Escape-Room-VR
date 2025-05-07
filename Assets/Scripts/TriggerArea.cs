@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEngine;
+using System.Collections;
 
 public class TriggerArea : MonoBehaviour
 {
@@ -23,6 +24,13 @@ public class TriggerArea : MonoBehaviour
         expectedShape = shape;
     }
 
+    private IEnumerator PlayAndStopEffect(ParticleSystem effect)
+    {
+        effect.Play();
+        yield return new WaitForSeconds(1.5f);
+        effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         string objectShape = other.tag; // Shape tag
@@ -42,14 +50,26 @@ public class TriggerArea : MonoBehaviour
         if (objectShape == expectedShape)
         {
             if (audioSource && correctSound) audioSource.PlayOneShot(correctSound);
-            if (successEffect) successEffect.Play();
+            if (successEffect) StartCoroutine(PlayAndStopEffect(successEffect));
 
             manager.HoleCorrect(myHole);
+
+            if (manager.shapeSpawner.AreAllShapesUsed() && manager.HasUnmatchedTargets())
+            {
+                manager.RespawnRemainingShapes();
+            }
+
         }
         else
         {
             if (audioSource && wrongSound) audioSource.PlayOneShot(wrongSound);
             manager.HoleIncorrect(myHole);
+
+            if (manager.shapeSpawner.AreAllShapesUsed() && manager.HasUnmatchedTargets())
+            {
+                manager.RespawnRemainingShapes();
+            }
+
         }
     }
 }
