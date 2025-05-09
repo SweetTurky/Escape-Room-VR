@@ -1895,7 +1895,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 2.7105054e-20, y: 8.173464e-39, z: 7.362e-42, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -3329,39 +3329,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   subtitleText: {fileID: 274118704}
   subtitles:
-  - startTime: 0
-    endTime: 2.5
-    text: Welcome, test participant.
-  - startTime: 2.921
-    endTime: 6
-    text: You are here to complete two tasks.
-  - startTime: 6.985
+  - startTime: 0.8
+    endTime: 4
+    text: You have completed the first round successfully.
+  - startTime: 5
     endTime: 9.5
-    text: The tasks are fairly simple.
-  - startTime: 10.24
-    endTime: 14
-    text: In front of you are a few uniquely shaped objects.
-  - startTime: 14.626
-    endTime: 21
-    text: These objects must be scaled down and sorted into their respective slots
-      in the sorting box in front of you.
-  - startTime: 22.2
-    endTime: 25.7
-    text: Above each hole, the required shape is presented.
-  - startTime: 26.594
-    endTime: 33.2
-    text: When all three sorting holes have been filled successfully, repeat the
-      process until told otherwise.
-  - startTime: 34.449
-    endTime: 39
-    text: To scale an object, simply grab it using your middle finger triggers.
-  - startTime: 40.318
-    endTime: 46.8
-    text: Then, move your controllers closer together to shrink it, or pull them
-      apart to enlarge.
-  - startTime: 47.578
-    endTime: 51
-    text: Your compliance is most appreciated.
+    text: For this next and final round, your goal is exactly the same.
+  - startTime: 9.7
+    endTime: 13.2
+    text: However... the scaling mechanic has changed.
+  - startTime: 13.8
+    endTime: 17.3
+    text: To scale an object, grab it using your right hand.
+  - startTime: 17.5
+    endTime: 22.3
+    text: ' Then, use the right thumbstick to manipulate the size of the object.'
+  - startTime: 23.8
+    endTime: 34.1
+    text: When all sorting holes have been filled successfully for 3 rounds, the
+      experiment is concluded, and you may take off the VR headset.
+  - startTime: 34.2
+    endTime: 37
+    text: 'We thank you for your cooperation. '
 --- !u!4 &269943976
 Transform:
   m_ObjectHideFlags: 0
@@ -9038,7 +9027,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78442fa0b5670c640a2188c757c2a208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  introVoiceLine: {fileID: 8300000, guid: 07c98134efce0e74d94ea6328dd08651, type: 3}
+  introVoiceLine: {fileID: 8300000, guid: 16c63bf9cba486e4094d10b38e2a9928, type: 3}
   audioSource: {fileID: 468201794}
   vrFade: {fileID: 1783134179}
   subtitlesManager: {fileID: 269943975}
@@ -13598,7 +13587,7 @@ MonoBehaviour:
   - {fileID: 8403486568940795452, guid: 7f2086d00e322854e86550e4c02b5d9f, type: 3}
   - {fileID: 170726588172123303, guid: de3de67d0ded43247b7a990506a45f1e, type: 3}
   manager: {fileID: 644166528}
-  thumbstickScale: 0
+  thumbstickScale: 1
 --- !u!1 &970386978
 GameObject:
   m_ObjectHideFlags: 0
@@ -29240,7 +29229,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8298045291338814965, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8298045291338814965, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.y

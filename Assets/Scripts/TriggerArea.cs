@@ -33,8 +33,7 @@ public class TriggerArea : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        string objectShape = other.tag; // Shape tag
-
+        string objectShape = other.tag; // The tag on the dropped object
         GameObject droppedObject = other.gameObject;
 
         // Destroy the shape on any drop
@@ -53,24 +52,11 @@ public class TriggerArea : MonoBehaviour
             if (successEffect) StartCoroutine(PlayAndStopEffect(successEffect));
 
             manager.HoleCorrect(myHole);
-
-            if (manager.shapeSpawner.AreAllShapesUsed() && manager.HasUnmatchedTargets())
-            {
-                manager.RespawnRemainingShapes();
-            }
-
         }
         else
         {
             if (audioSource && wrongSound) audioSource.PlayOneShot(wrongSound);
-            manager.HoleIncorrect(myHole);
-
-            if (manager.shapeSpawner.AreAllShapesUsed() && manager.HasUnmatchedTargets())
-            {
-                manager.RespawnRemainingShapes();
-            }
-
+            manager.HoleIncorrect(myHole, objectShape); // Respawn just this shape
         }
     }
 }
-

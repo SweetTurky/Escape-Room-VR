@@ -7,9 +7,6 @@ using UnityEngine.XR.Interaction.Toolkit.Transformers;
 
 public class ShapeSpawner : MonoBehaviour
 {
-    [Header("Initial Objects In Scene")]
-    public GameObject[] initialShapeObjects;
-
     [Header("Spawn Configuration")]
     public Transform[] spawnPoints; // Positions where shapes can appear
     public GameObject[] shapePrefabs; // Prefabs tagged with shape names (e.g., "Cube", "Sphere")
@@ -20,24 +17,23 @@ public class ShapeSpawner : MonoBehaviour
     // Internal tracking
     private List<Transform> usedSpawnPoints = new List<Transform>();
     private List<GameObject> spawnedShapes = new List<GameObject>();
-    private List<GameObject> activeShapeObjects = new List<GameObject>(); // Tracks both initial + spawned
 
-    void Start()
-    {
-        // Track initial scene objects
-        activeShapeObjects.AddRange(initialShapeObjects);
-    }
+    // Map from spawned shape to its spawn point for reliable freeing
+    private Dictionary<GameObject, Transform> shapeToSpawnPoint = new Dictionary<GameObject, Transform>();
+
+    [Tooltip("Choose to use embodied scaling or (right) thumbstick scaling.")]
+    public bool thumbstickScale;
 
     // === Public API ===
 
     /// <summary>
-    /// Spawn one instance of each shape prefab at free spawn points.
+    /// Spawns one instance of each shape prefab at a free spawn point.
     /// </summary>
     public void SpawnShapes()
     {
         ClearSpawnedShapes();
 
-        foreach (GameObject prefab in shapePrefabs)
+        foreach (var shape in manager.shapePrefabs)
         {
             Transform spawnPoint = GetFreeSpawnPoint();
             if (spawnPoint == null)
@@ -46,51 +42,94 @@ public class ShapeSpawner : MonoBehaviour
                 break;
             }
 
-            GameObject instance = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
+            GameObject instance = Instantiate(shape.prefab, spawnPoint.position, Quaternion.identity);
             spawnedShapes.Add(instance);
-            activeShapeObjects.Add(instance);
+
+            // Track spawn point for this shape
+            shapeToSpawnPoint[instance] = spawnPoint;
 
             EnableGrabComponents(instance);
         }
     }
 
     /// <summary>
-    /// Spawn a specific shape by tag name at a free spawn point.
+    /// Spawns a specific shape (by tag name) at a free spawn point.
     /// </summary>
     public void SpawnShape(string shapeName)
     {
-        GameObject prefab = shapePrefabs.FirstOrDefault(p => p.CompareTag(shapeName));
+        Debug.Log($"[ShapeSpawner] Attempting to spawn shape: {shapeName}");
+
+        GameObject prefab = manager.shapePrefabs
+            .FirstOrDefault(p => p.shapeName == shapeName)?.prefab;
+
+        if (prefab == null)
+        {
+            Debug.LogWarning($"[ShapeSpawner] No prefab found for shapeName: {shapeName}");
+            return;
+        }
+
         Transform spawnPoint = GetFreeSpawnPoint();
 
-        if (prefab != null && spawnPoint != null)
+        if (spawnPoint == null)
         {
-            GameObject instance = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
-            spawnedShapes.Add(instance);
-            activeShapeObjects.Add(instance);
+            Debug.LogWarning("[ShapeSpawner] No available spawn point found.");
+            return;
+        }
 
-            EnableGrabComponents(instance);
-        }
-        else
-        {
-            Debug.LogWarning($"Cannot spawn shape: {shapeName} — prefab or spawn point missing.");
-        }
+        GameObject instance = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
+        spawnedShapes.Add(instance);
+
+        // Track spawn point for this shape
+        shapeToSpawnPoint[instance] = spawnPoint;
+
+        Debug.Log($"[ShapeSpawner] Spawned shape '{shapeName}' at {spawnPoint.position}");
+
+        EnableGrabComponents(instance);
     }
 
     /// <summary>
-    /// Called by TriggerArea when a shape is used.
+    /// Called by TriggerArea when a shape is used (correct or incorrect).
+    /// Removes shape and frees its spawn point.
     /// </summary>
     public void RemoveShape(GameObject obj)
     {
-        if (activeShapeObjects.Contains(obj))
+        if (spawnedShapes.Contains(obj))
         {
-            activeShapeObjects.Remove(obj);
-            spawnedShapes.Remove(obj); // In case it's also a spawned one
+            spawnedShapes.Remove(obj);
+
+            if (shapeToSpawnPoint.TryGetValue(obj, out Transform spawnPoint))
+            {
+                if (usedSpawnPoints.Contains(spawnPoint))
+                {
+                    usedSpawnPoints.Remove(spawnPoint);
+                    Debug.Log($"[ShapeSpawner] Freed spawn point at {spawnPoint.position}");
+                }
+                shapeToSpawnPoint.Remove(obj);
+            }
+            else
+            {
+                // Fallback: use distance check as before
+                Transform closestPoint = spawnPoints
+                    .FirstOrDefault(p => Vector3.Distance(p.position, obj.transform.position) < 0.1f);
+
+                if (closestPoint != null && usedSpawnPoints.Contains(closestPoint))
+                {
+                    usedSpawnPoints.Remove(closestPoint);
+                    Debug.Log($"[ShapeSpawner] Freed spawn point at {closestPoint.position} (fallback)");
+                }
+            }
+
+            Destroy(obj);
+        }
+        else
+        {
+            Debug.LogWarning("[ShapeSpawner] Tried to remove shape that is not tracked.");
             Destroy(obj);
         }
     }
 
     /// <summary>
-    /// Clears only spawned (not initial) shapes.
+    /// Destroys all currently spawned shape objects.
     /// </summary>
     public void ClearSpawnedShapes()
     {
@@ -100,47 +139,38 @@ public class ShapeSpawner : MonoBehaviour
                 Destroy(obj);
         }
 
-        activeShapeObjects.RemoveAll(obj => spawnedShapes.Contains(obj));
         spawnedShapes.Clear();
         usedSpawnPoints.Clear();
+        shapeToSpawnPoint.Clear();
+
+        Debug.Log("[ShapeSpawner] Cleared all spawned shapes and freed spawn points.");
     }
 
     /// <summary>
-    /// Clears all shapes — both spawned and initial. Use for full reset.
-    /// </summary>
-    public void ClearAllShapes()
-    {
-        foreach (GameObject obj in activeShapeObjects)
-        {
-            if (obj != null)
-                Destroy(obj);
-        }
-
-        activeShapeObjects.Clear();
-        spawnedShapes.Clear();
-        usedSpawnPoints.Clear();
-    }
-
-    /// <summary>
-    /// Check if the player has used up all current shape objects.
+    /// Checks if all spawned shape objects have been used.
     /// </summary>
     public bool AreAllShapesUsed()
     {
-        return activeShapeObjects.Count == 0;
+        return spawnedShapes.Count == 0;
     }
 
     // === Internal Helpers ===
 
     private Transform GetFreeSpawnPoint()
     {
+        Debug.Log($"[ShapeSpawner] Used spawn points: {usedSpawnPoints.Count}/{spawnPoints.Length}");
+
         foreach (Transform point in spawnPoints)
         {
             if (!usedSpawnPoints.Contains(point))
             {
                 usedSpawnPoints.Add(point);
+                Debug.Log($"[ShapeSpawner] Using spawn point at {point.position}");
                 return point;
             }
         }
+
+        Debug.LogWarning("[ShapeSpawner] No free spawn points available!");
         return null;
     }
 
@@ -151,5 +181,12 @@ public class ShapeSpawner : MonoBehaviour
 
         var transformer = instance.GetComponent<XRGeneralGrabTransformer>();
         if (transformer) transformer.enabled = true;
+
+        if (thumbstickScale)
+        {
+            var thumbstickscale = instance.GetComponent<ThumbstickScalerInput>();
+            if (thumbstickscale) thumbstickscale.enabled = true;
+        }
     }
 }
+
