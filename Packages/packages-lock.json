@@ -7,13 +7,6 @@
       "dependencies": {},
       "hash": "6fac03d2be5061c12dc9fa2342ef3cbe0f1ca5bf"
     },
-    "com.labstreaminglayer.lsl4unity": {
-      "version": "https://github.com/labstreaminglayer/LSL4Unity.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "75d54ab160edaf02d2173350bbd91f1afbdb66d8"
-    },
     "com.unity.burst": {
       "version": "1.8.18",
       "depth": 2,
