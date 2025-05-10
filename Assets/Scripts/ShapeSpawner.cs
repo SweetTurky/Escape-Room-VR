@@ -21,8 +21,8 @@ public class ShapeSpawner : MonoBehaviour
     // Map from spawned shape to its spawn point for reliable freeing
     private Dictionary<GameObject, Transform> shapeToSpawnPoint = new Dictionary<GameObject, Transform>();
 
-    [Tooltip("Choose to use embodied scaling or (right) thumbstick scaling.")]
-    public bool thumbstickScale;
+    [Tooltip("Choose to use embodied scaling or (right controller) A/B scaling.")]
+    public bool aBScale;
 
     // === Public API ===
 
@@ -119,6 +119,7 @@ public class ShapeSpawner : MonoBehaviour
                 }
             }
 
+
             Destroy(obj);
         }
         else
@@ -182,10 +183,10 @@ public class ShapeSpawner : MonoBehaviour
         var transformer = instance.GetComponent<XRGeneralGrabTransformer>();
         if (transformer) transformer.enabled = true;
 
-        if (thumbstickScale)
+        if (aBScale)
         {
-            var thumbstickscale = instance.GetComponent<ThumbstickScalerInput>();
-            if (thumbstickscale) thumbstickscale.enabled = true;
+            var abscale = instance.GetComponent<ABButtonScaler>();
+            if (abscale) abscale.enabled = true;
         }
     }
 }
