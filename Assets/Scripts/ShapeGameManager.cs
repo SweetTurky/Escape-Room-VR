@@ -66,7 +66,7 @@ public class ShapeGameManager : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(StartGameRoutine());
+        //StartCoroutine(StartGameRoutine());
     }
 
     private IEnumerator StartGameRoutine()
