@@ -36,6 +36,7 @@ Material:
   disabledShaderPasses:
   - MOTIONVECTORS
   - DepthOnly
+  - SHADOWCASTER
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -65,7 +66,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: ed4be1b682e0a264ca1437227f5c2cfa, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -140,7 +141,7 @@ Material:
     - _ZWrite: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 0, b: 0, a: 0.384}
-    - _Color: {r: 0.8206897, g: 1, b: 0, a: 1}
+    - _Color: {r: 1, g: 0, b: 0, a: 0.384}
     - _DiffuseColor: {r: 0, g: 1, b: 0.751724, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
