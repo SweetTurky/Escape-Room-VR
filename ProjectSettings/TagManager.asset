@@ -16,7 +16,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - CabinetLightLayer
   - 
   - 
   - 
@@ -55,3 +55,4 @@ TagManager:
   - Light Layer 5
   - Light Layer 6
   - Light Layer 7
+  - Light Layer 8
