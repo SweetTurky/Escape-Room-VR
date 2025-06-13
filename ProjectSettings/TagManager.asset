@@ -9,6 +9,8 @@ TagManager:
   - Frustum
   - Torus
   - Cylinder
+  - Keyhole
+  - RustyKey
   layers:
   - Default
   - TransparentFX
