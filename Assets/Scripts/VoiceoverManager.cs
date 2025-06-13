@@ -14,7 +14,7 @@ public class VoiceoverManager : MonoBehaviour
     public GameObject xrRig; // Assign XR Origin or similar
 
     [Header("Voice Lines")]
-    public AudioClip gameStartClip;
+    //public AudioClip gameStartClip;
     public AudioClip[] pickupClips;
     public AudioClip[] cauldronAddClips;
     public AudioClip[] checkpointClips;
@@ -47,7 +47,7 @@ public class VoiceoverManager : MonoBehaviour
 
     private void Start()
     {
-        QueueVoice(gameStartClip, delayBefore: 1f, blockMovement: true);
+        //QueueVoice(gameStartClip, delayBefore: 1f, blockMovement: true);
         StartCoroutine(ProcessQueue());
     }
 
