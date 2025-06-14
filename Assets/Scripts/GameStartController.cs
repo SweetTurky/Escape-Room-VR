@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR;
 
 public class GameStartController : MonoBehaviour
 {
@@ -16,73 +17,112 @@ public class GameStartController : MonoBehaviour
     public AudioClip[] continueClips;
     public AudioClip wormIntroClip;
 
+    // internal state
+    private IXRMovementBlockable _blocker;
+    private bool _skipAvailable;
+
+    private void Awake()
+    {
+        _blocker = xrRig.GetComponentInChildren<IXRMovementBlockable>();
+    }
+
     private void Start()
     {
+        // Buttons off until we show them
+        continueButton.SetActive(false);
+        lockedFeatureButton.SetActive(false);
+
         StartCoroutine(GameIntroSequence());
+    }
+
+    private void Update()
+    {
+        if (_skipAvailable)
+        {
+            // poll the right-hand secondary button (B)
+            var rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+            if (rightHand.TryGetFeatureValue(CommonUsages.secondaryButton, out bool pressed) && pressed)
+            {
+                SkipIntro();
+            }
+        }
     }
 
     private IEnumerator GameIntroSequence()
     {
-        // 1. Disable movement
-        var blocker = xrRig.GetComponentInChildren<IXRMovementBlockable>();
-        blocker?.EnableMovement(false);
+        // 1) Lock movement & turning
+        _blocker?.EnableMovement(false);
 
-        // 2. Start black, then fade in
-        fadeController.FadeOut(0f); // start fully black
+        // 2) Fade in
+        fadeController.FadeOut(0f);
         yield return new WaitForSeconds(0.2f);
         fadeController.FadeIn(2f);
         yield return new WaitForSeconds(2f);
 
-        // 3. Play all intro voice lines sequentially
+        // 3) Begin queuing intro lines
         foreach (var clip in introClips)
-        {
-            VoiceoverManager.Instance.QueueVoice(clip, blockMovement: true);
-        }
+            VoiceoverManager.Instance.QueueVoice(clip, delayAfter: 1f, blockMovement: false);
 
-        // 4. Wait until voice queue is done
-        yield return new WaitUntil(() => !VoiceoverManager.Instance.IsSpeaking());
+        // now allow skipping
+        _skipAvailable = true;
 
-        // 5. Show buttons
-        continueButton.SetActive(true);
-        lockedFeatureButton.SetActive(true);
+        // 4) Wait until all lines done OR skip triggered
+        yield return new WaitUntil(() =>
+            VoiceoverManager.Instance.IsIdle
+            || !_skipAvailable
+        );
 
-        /*// Disable the second button visually
-        Button lockedBtn = lockedFeatureButton.GetComponent<Button>();
-        if (lockedBtn != null)
-            lockedBtn.interactable = false;*/
+        // show the yes/no choice buttons
+        ShowChoiceButtons();
     }
 
-    // Called from the Continue button's OnClick event
+    private void ShowChoiceButtons()
+    {
+        _skipAvailable = false;
+
+        continueButton.SetActive(true);
+        lockedFeatureButton.SetActive(true);
+        var lockedBtn = lockedFeatureButton.GetComponent<Button>();
+        if (lockedBtn != null)
+            lockedBtn.interactable = false;
+    }
+
+    private void SkipIntro()
+    {
+        if (!_skipAvailable) return;
+        _skipAvailable = false;
+
+        StopAllCoroutines();                        // kills GameIntroSequence
+        VoiceoverManager.Instance.ClearQueue();     // kills the old clip + queue in the VO manager
+
+        ShowChoiceButtons();
+    }
+
+    // Called by the Continue button's OnClick
     public void OnContinueClicked()
     {
         continueButton.SetActive(false);
         lockedFeatureButton.SetActive(false);
-
         StartCoroutine(ContinueSequence());
     }
 
     private IEnumerator ContinueSequence()
     {
-        // Step 1: Queue intro voice lines
+        // 1) Re-enable movement & turning immediately
+        _blocker?.EnableMovement(true);
+
+        // 2) Queue continue lines
         foreach (var clip in continueClips)
-        {
-            VoiceoverManager.Instance.QueueVoice(clip, blockMovement: true);
-        }
+            VoiceoverManager.Instance.QueueVoice(clip, delayAfter: 1f, blockMovement: false);
 
-        // Step 2: Wait until they finish
-        yield return new WaitUntil(() => !VoiceoverManager.Instance.IsSpeaking());
-
-        // Step 3: Enable movement
-        var blocker = xrRig.GetComponentInChildren<IXRMovementBlockable>();
-        blocker?.EnableMovement(true);
+        // 3) Wait until they finish
+        yield return new WaitUntil(() => VoiceoverManager.Instance.IsIdle);
 
         Debug.Log("Game Started!");
 
-        // Step 4: Play worm intro voiceline
+        // 4) Worm intro + spawn
         VoiceoverManager.Instance.QueueVoice(wormIntroClip, blockMovement: false);
-
-        // Step 5: Wait 1 second, then spawn ingredient (before voice ends)
         yield return new WaitForSeconds(1f);
-        ingredientSpawner.SpawnJarWithIngredient(0); // 0 = Dried Earth Worms
+        ingredientSpawner.SpawnJarWithIngredient(0);
     }
 }

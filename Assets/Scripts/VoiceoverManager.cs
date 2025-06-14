@@ -14,7 +14,6 @@ public class VoiceoverManager : MonoBehaviour
     public GameObject xrRig; // Assign XR Origin or similar
 
     [Header("Voice Lines")]
-    //public AudioClip gameStartClip;
     public AudioClip[] pickupClips;
     public AudioClip[] cauldronAddClips;
     public AudioClip[] checkpointClips;
@@ -35,23 +34,17 @@ public class VoiceoverManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         if (audioSource == null)
-        {
             audioSource = gameObject.AddComponent<AudioSource>();
-        }
 
         if (xrRig != null)
-        {
             movementBlocker = xrRig.GetComponentInChildren<IXRMovementBlockable>();
-        }
     }
 
     private void Start()
     {
-        //QueueVoice(gameStartClip, delayBefore: 1f, blockMovement: true);
+        // no auto-play here
         StartCoroutine(ProcessQueue());
     }
-
-    // === VOICE CONTROL ===
 
     public void QueueVoice(AudioClip clip, float delayBefore = 0f, float delayAfter = 0f, bool blockMovement = false)
     {
@@ -61,9 +54,11 @@ public class VoiceoverManager : MonoBehaviour
 
     private IEnumerator PlayClipSequence(AudioClip clip, float delayBefore, float delayAfter, bool blockMovement)
     {
-        if (delayBefore > 0f) yield return new WaitForSeconds(delayBefore);
+        if (delayBefore > 0f)
+            yield return new WaitForSeconds(delayBefore);
 
-        if (blockMovement) movementBlocker?.EnableMovement(false);
+        if (blockMovement)
+            movementBlocker?.EnableMovement(false);
 
         isSpeaking = true;
         audioSource.clip = clip;
@@ -73,9 +68,11 @@ public class VoiceoverManager : MonoBehaviour
         yield return new WaitForSeconds(clip.length);
 
         isSpeaking = false;
-        if (blockMovement) movementBlocker?.EnableMovement(true);
+        if (blockMovement)
+            movementBlocker?.EnableMovement(true);
 
-        if (delayAfter > 0f) yield return new WaitForSeconds(delayAfter);
+        if (delayAfter > 0f)
+            yield return new WaitForSeconds(delayAfter);
     }
 
     private IEnumerator ProcessQueue()
@@ -83,14 +80,18 @@ public class VoiceoverManager : MonoBehaviour
         while (true)
         {
             while (voiceQueue.Count > 0)
-            {
                 yield return StartCoroutine(voiceQueue.Dequeue());
-            }
+
             yield return null;
         }
     }
 
     public bool IsSpeaking() => isSpeaking;
+
+    /// <summary>
+    /// True when nothing is playing and the queue is empty.
+    /// </summary>
+    public bool IsIdle => !isSpeaking && voiceQueue.Count == 0;
 
     // === EVENT SHORTCUTS ===
 
@@ -103,4 +104,27 @@ public class VoiceoverManager : MonoBehaviour
         if (clips == null || clips.Length == 0) return null;
         return clips[Random.Range(0, clips.Length)];
     }
+
+    /// <summary>
+    /// Immediately stops any playing clip, nukes the queue,
+    /// and restarts the queue processor so new clips fire at once.
+    /// </summary>
+    public void ClearQueue()
+    {
+        // Stop the currently playing clip + the queue coroutine
+        StopAllCoroutines();
+
+        // Nuke any pending clips
+        voiceQueue.Clear();
+
+        // Stop the audio immediately
+        if (audioSource.isPlaying)
+            audioSource.Stop();
+
+        isSpeaking = false;
+
+        // Restart the queue processor
+        StartCoroutine(ProcessQueue());
+    }
+
 }

@@ -10,6 +10,11 @@ public class IngredientSpawner : MonoBehaviour
     [Header("Particle System")]
     public ParticleEffectController particleController;
 
+    private void Start()
+    {
+        SpawnJarWithIngredient(0);
+    }
+
     public void SpawnJarWithIngredient(int ingredientIndex)
     {
         if (jarPrefab == null || ingredientPrefabs.Length == 0 || spawnPoint == null) return;
@@ -25,7 +30,20 @@ public class IngredientSpawner : MonoBehaviour
         Transform ingredientPoint = jarInstance.transform.Find("IngredientPoint");
         if (ingredientPoint != null)
         {
-            Instantiate(ingredientPrefab, ingredientPoint.position, ingredientPoint.rotation, ingredientPoint);
+            // A) Instantiate with no parent so it keeps its prefab scale
+            GameObject ingredientInstance = Instantiate(
+                ingredientPrefab,
+                ingredientPoint.position,
+                ingredientPoint.rotation
+            );
+
+            // B) Parent it—but preserve world position/rotation/scale
+            ingredientInstance.transform.SetParent(ingredientPoint, worldPositionStays: true);
+
+            // C) Snap it exactly into place (position/rotation are already correct,
+            //    this is mostly defensive)
+            ingredientInstance.transform.localPosition = Vector3.zero;
+            ingredientInstance.transform.localRotation = Quaternion.identity;
         }
         else
         {

@@ -11,45 +11,51 @@ public class ParticleEffectController : MonoBehaviour
     public float volume = 1f;
 
     private AudioSource audioSource;
+    private bool _hasStoppedOnce = false;
 
     private void Awake()
     {
         if (rootParticleSystem == null)
-        {
             rootParticleSystem = GetComponentInChildren<ParticleSystem>();
-        }
 
-        // Add an AudioSource if needed
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-
+        audioSource = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
     }
 
     /// <summary>
-    /// Starts the full particle system and plays the start sound.
+    /// Called when a new jar spawns. Re-enables emission on all systems,
+    /// plays the start sound, and resets the stop-sound guard.
     /// </summary>
     public void StartParticles()
     {
-        if (rootParticleSystem != null)
+        if (rootParticleSystem == null) return;
+
+        // --- Re-enable emission on root + all children ---
+        var allParticles = rootParticleSystem.GetComponentsInChildren<ParticleSystem>();
+        foreach (var ps in allParticles)
         {
-            rootParticleSystem.Play(true);
+            var emission = ps.emission;
+            emission.enabled = true;
         }
+
+        // Play particles
+        rootParticleSystem.Play(true);
+
+        // Reset flag so next StopEmission() will play its sound
+        _hasStoppedOnce = false;
 
         PlaySound(startSound);
     }
 
     /// <summary>
-    /// Gradually stops emission from the particle system, and plays the stop sound.
+    /// Stops emission (letting existing particles die out), preserving your original loop,
+    /// and plays the stop sound only once per jar.
     /// </summary>
     public void StopEmission()
     {
         if (rootParticleSystem == null) return;
 
-        // Stop emission from root and all child systems
+        // — Your original emission-disable block —
         ParticleSystem[] allParticles = rootParticleSystem.GetComponentsInChildren<ParticleSystem>();
         foreach (ParticleSystem ps in allParticles)
         {
@@ -57,28 +63,17 @@ public class ParticleEffectController : MonoBehaviour
             emission.enabled = false;
         }
 
-        PlaySound(stopSound);
-
-        // Optional: stop system fully after delay if you want
-        // StartCoroutine(StopAfterDelay(2f));
+        // Play stop sound only the first time this is called after StartParticles()
+        if (!_hasStoppedOnce)
+        {
+            PlaySound(stopSound);
+            _hasStoppedOnce = true;
+        }
     }
 
-    /// <summary>
-    /// Play a given sound clip at the object's position.
-    /// </summary>
     private void PlaySound(AudioClip clip)
     {
         if (clip == null) return;
-
         audioSource.PlayOneShot(clip, volume);
     }
-
-    // Optional coroutine if you want to fully stop the system later
-    /*
-    private IEnumerator StopAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        rootParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-    }
-    */
 }

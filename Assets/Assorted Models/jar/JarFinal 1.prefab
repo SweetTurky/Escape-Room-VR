@@ -116,7 +116,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8767930895348722801}
   m_Layer: 0
-  m_Name: IngredientSpawnPoint
+  m_Name: IngredientPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -256,7 +256,6 @@ GameObject:
   - component: {fileID: 8603492679511329667}
   - component: {fileID: 3490983138575019635}
   - component: {fileID: 8746932392048110166}
-  - component: {fileID: 248037285953414635}
   m_Layer: 0
   m_Name: JarFinal 1
   m_TagString: Untagged
@@ -393,7 +392,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
-  m_Colliders: []
+  m_Colliders:
+  - {fileID: 1328152521389137791}
+  - {fileID: 5455456898327667206}
+  - {fileID: 8532138456484238114}
+  - {fileID: 3752480069698295910}
+  - {fileID: 6751240402866993829}
+  - {fileID: 546836304319822747}
+  - {fileID: 3249548315674046668}
+  - {fileID: 3338636351361381419}
+  - {fileID: 595957540698263498}
+  - {fileID: 7938366064297142551}
+  - {fileID: 6786270379887307584}
+  - {fileID: 356249707287540301}
+  - {fileID: 7176031635528087711}
+  - {fileID: 5158997868738338528}
+  - {fileID: 7173287720692235254}
+  - {fileID: 7944860118173737545}
+  - {fileID: 6086045341704877779}
+  - {fileID: 5904587048854580917}
   m_InteractionLayers:
     m_Bits: 1
   m_DistanceCalculationMode: 1
@@ -502,19 +519,6 @@ MonoBehaviour:
   m_StartingMultipleGrabTransformers: []
   m_AddDefaultGrabTransformers: 1
   m_FarAttachMode: 0
---- !u!114 &248037285953414635
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1974921118712940100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c422cc4a9b994034aa60c361ee06f940, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  particleController: {fileID: 0}
 --- !u!1 &2203120198162919570
 GameObject:
   m_ObjectHideFlags: 0
@@ -1298,6 +1302,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 2099401344994998090}
     m_Modifications:
     - target: {fileID: -1532214286239897702, guid: 30b8ef066c2994f49a580dcc0d471e6f, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1532214286239897702, guid: 30b8ef066c2994f49a580dcc0d471e6f, type: 3}
       propertyPath: m_TrackScale
       value: 1
       objectReference: {fileID: 0}
@@ -1547,7 +1555,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 4133555257526994290}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1001225554115622842}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
   m_Name: 
