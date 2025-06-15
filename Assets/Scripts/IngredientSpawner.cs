@@ -10,10 +10,13 @@ public class IngredientSpawner : MonoBehaviour
     [Header("Particle System")]
     public ParticleEffectController particleController;
 
-    private void Start()
+    [Header("Return-to-Cauldron")]
+    public StationTrigger cauldronStationTrigger;
+
+    /*private void Start()
     {
         SpawnJarWithIngredient(0);
-    }
+    }*/
 
     public void SpawnJarWithIngredient(int ingredientIndex)
     {
@@ -44,6 +47,9 @@ public class IngredientSpawner : MonoBehaviour
             //    this is mostly defensive)
             ingredientInstance.transform.localPosition = Vector3.zero;
             ingredientInstance.transform.localRotation = Quaternion.identity;
+
+            // D) Now de-parent so it isn’t a child of the jar anymore
+            //ingredientInstance.transform.SetParent(null, worldPositionStays: true);
         }
         else
         {
@@ -59,5 +65,7 @@ public class IngredientSpawner : MonoBehaviour
         // 4. Watch for grab
         JarGrabWatcher watcher = jarInstance.AddComponent<JarGrabWatcher>();
         watcher.particleController = particleController;
+        watcher.cauldronStationTrigger = cauldronStationTrigger;
+
     }
 }

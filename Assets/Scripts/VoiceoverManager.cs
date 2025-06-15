@@ -95,7 +95,7 @@ public class VoiceoverManager : MonoBehaviour
 
     // === EVENT SHORTCUTS ===
 
-    public void OnItemPickup() => QueueVoice(GetRandom(pickupClips));
+    /*public void OnItemPickup() => QueueVoice(GetRandom(pickupClips));
     public void OnIngredientAddedToCauldron() => QueueVoice(GetRandom(cauldronAddClips));
     public void OnCheckpointReached() => QueueVoice(GetRandom(checkpointClips));
 
@@ -103,7 +103,7 @@ public class VoiceoverManager : MonoBehaviour
     {
         if (clips == null || clips.Length == 0) return null;
         return clips[Random.Range(0, clips.Length)];
-    }
+    }*/
 
     /// <summary>
     /// Immediately stops any playing clip, nukes the queue,
@@ -125,6 +125,11 @@ public class VoiceoverManager : MonoBehaviour
 
         // Restart the queue processor
         StartCoroutine(ProcessQueue());
+    }
+
+    public void QueueInspectorClip(AudioClip clip)
+    {
+        QueueVoice(clip);
     }
 
 }

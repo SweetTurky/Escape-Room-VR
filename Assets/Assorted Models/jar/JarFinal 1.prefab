@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3849696700228291641}
   - component: {fileID: 8532138456484238114}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -63,7 +63,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3696000312106773510}
   - component: {fileID: 3338636351361381419}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (11)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -115,7 +115,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8767930895348722801}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: IngredientPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,7 +147,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1048068907288555633}
   - component: {fileID: 7173287720692235254}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -200,7 +200,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6197438658440864308}
   - component: {fileID: 356249707287540301}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (13)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -256,7 +256,7 @@ GameObject:
   - component: {fileID: 8603492679511329667}
   - component: {fileID: 3490983138575019635}
   - component: {fileID: 8746932392048110166}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: JarFinal 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -378,7 +378,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &8746932392048110166
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -410,7 +410,7 @@ MonoBehaviour:
   - {fileID: 7173287720692235254}
   - {fileID: 7944860118173737545}
   - {fileID: 6086045341704877779}
-  - {fileID: 5904587048854580917}
+  - {fileID: 0}
   m_InteractionLayers:
     m_Bits: 1
   m_DistanceCalculationMode: 1
@@ -474,9 +474,9 @@ MonoBehaviour:
   m_UseDynamicAttach: 1
   m_MatchAttachPosition: 1
   m_MatchAttachRotation: 1
-  m_SnapToColliderVolume: 1
+  m_SnapToColliderVolume: 0
   m_ReinitializeDynamicAttachEverySingleGrab: 1
-  m_AttachEaseInTime: 0.15
+  m_AttachEaseInTime: 0.3
   m_MovementType: 2
   m_VelocityDamping: 1
   m_VelocityScale: 1
@@ -529,7 +529,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7654924441806071018}
   - component: {fileID: 7938366064297142551}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (12)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -582,7 +582,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6077077400885357888}
   - component: {fileID: 3249548315674046668}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -634,7 +634,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2655755783524113720}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LidMountPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -665,8 +665,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4953810035469191761}
-  - component: {fileID: 5904587048854580917}
-  m_Layer: 0
+  - component: {fileID: 917807427802722265}
+  m_Layer: 7
   m_Name: Bottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -682,14 +682,14 @@ Transform:
   m_GameObject: {fileID: 4030677654884504547}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.006226446, y: 0.3485757, z: -0.32678}
-  m_LocalScale: {x: 1.9223118, y: 0.083819546, z: 1.9223118}
+  m_LocalPosition: {x: 0.006226446, y: 0.42, z: -0.32678}
+  m_LocalScale: {x: 1.6964031, y: 0.07396914, z: 1.6964031}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2099401344994998090}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!64 &5904587048854580917
-MeshCollider:
+--- !u!65 &917807427802722265
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -706,10 +706,9 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4176229933866537691
 GameObject:
   m_ObjectHideFlags: 0
@@ -720,7 +719,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6366260339875232368}
   - component: {fileID: 546836304319822747}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (10)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -773,7 +772,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3274699007607304106}
   - component: {fileID: 3752480069698295910}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -826,7 +825,7 @@ GameObject:
   m_Component:
   - component: {fileID: 936321499193124499}
   - component: {fileID: 7944860118173737545}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (15)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -879,7 +878,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5080398504857852315}
   - component: {fileID: 6751240402866993829}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -932,7 +931,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5821017130621853436}
   - component: {fileID: 5455456898327667206}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -985,7 +984,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4393799305049913136}
   - component: {fileID: 5158997868738338528}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (14)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1038,7 +1037,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9025140783753655293}
   - component: {fileID: 6086045341704877779}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (16)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1091,7 +1090,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1591132013474610860}
   - component: {fileID: 1328152521389137791}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1144,7 +1143,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4070575013421876704}
   - component: {fileID: 595957540698263498}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1197,7 +1196,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6627158166610019716}
   - component: {fileID: 6786270379887307584}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1250,7 +1249,7 @@ GameObject:
   m_Component:
   - component: {fileID: 878181814097793511}
   - component: {fileID: 7176031635528087711}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1353,6 +1352,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: BottleCork_1_final
       objectReference: {fileID: 0}
+    - target: {fileID: 3798865231569138376, guid: 30b8ef066c2994f49a580dcc0d471e6f, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3859705831193861035, guid: 30b8ef066c2994f49a580dcc0d471e6f, type: 3}
+      propertyPath: jarParent
+      value: 
+      objectReference: {fileID: 1974921118712940100}
     - target: {fileID: 3859705831193861035, guid: 30b8ef066c2994f49a580dcc0d471e6f, type: 3}
       propertyPath: pullSound
       value: 
@@ -1377,6 +1384,10 @@ PrefabInstance:
       propertyPath: lidGrabInteractable
       value: 
       objectReference: {fileID: 6044162351748096744}
+    - target: {fileID: 4497717744306416720, guid: 30b8ef066c2994f49a580dcc0d471e6f, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9136190771511567435, guid: 30b8ef066c2994f49a580dcc0d471e6f, type: 3}
       propertyPath: m_LocalScale.x
       value: 41.66667

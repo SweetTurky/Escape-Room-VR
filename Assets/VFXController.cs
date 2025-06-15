@@ -26,6 +26,10 @@ public class VFXController : MonoBehaviour
         if (vfx == null)
             vfx = GetComponent<VisualEffect>();
 
+        // Ensure it’s not playing at startup
+        if (vfx != null)
+            vfx.Stop();
+
         // Get or add AudioSource
         _audioSource = GetComponent<AudioSource>();
         _audioSource.playOnAwake = false;

@@ -8,18 +8,27 @@ public class CauldronEffects : MonoBehaviour
     public CauldronController cauldron;
 
     [Header("Ingredient Particle Effects")]
-    public ParticleSystem wormParticles;          // e.g. for DriedEarthWorms
-    public ParticleSystem firebloomParticles;     // e.g. for FirebloomPetals
-    public ParticleSystem dragonToothParticles;   // for DragonsTooth
+    public ParticleSystem wormParticles;
+    public ParticleSystem firebloomParticles;
+    public ParticleSystem dragonToothParticles;
 
-    [Header("Ingredient Audio Clips")]
+    [Header("Ingredient SFX")]
     public AudioClip wormSfx;
     public AudioClip firebloomSfx;
     public AudioClip dragonToothSfx;
 
+    [Header("Ingredient Voice Lines (can be multiple)")]
+    public AudioClip[] wormVoiceLines;
+    public AudioClip[] firebloomVoiceLines;
+    public AudioClip[] dragonToothVoiceLines;
+
+    [Tooltip("Pause after each VO clip")]
+    public float voiceDelayAfter = 0.5f;
+
     [Header("Potion Finished Effect")]
     public ParticleSystem potionFinishedParticles;
     public AudioClip potionFinishedSfx;
+    public AudioClip[] potionFinishedVoiceLines;
 
     private AudioSource _audioSource;
 
@@ -31,65 +40,63 @@ public class CauldronEffects : MonoBehaviour
 
     private void OnEnable()
     {
-        if (cauldron != null)
-        {
-            cauldron.OnIngredientAdded.AddListener(HandleIngredient);
-            cauldron.OnPotionFinished.AddListener(HandlePotionFinished);
-        }
+        cauldron.OnIngredientAdded.AddListener(HandleIngredient);
+        cauldron.OnPotionFinished.AddListener(HandlePotionFinished);
     }
 
     private void OnDisable()
     {
-        if (cauldron != null)
-        {
-            cauldron.OnIngredientAdded.RemoveListener(HandleIngredient);
-            cauldron.OnPotionFinished.RemoveListener(HandlePotionFinished);
-        }
+        cauldron.OnIngredientAdded.RemoveListener(HandleIngredient);
+        cauldron.OnPotionFinished.RemoveListener(HandlePotionFinished);
     }
 
-    /// <summary>
-    /// Called whenever the CauldronController invokes OnIngredientAdded.
-    /// Plays a different effect based on the ingredient type.
-    /// </summary>
     public void HandleIngredient(IngredientType type)
     {
+        Debug.Log($"HandleIngredient triggered for {type}", this);
+
         switch (type)
         {
             case IngredientType.DriedWorm:
                 PlayEffect(wormParticles, wormSfx);
+                QueueVoiceLines(wormVoiceLines);
                 break;
-
             case IngredientType.FirebloomPetals:
                 PlayEffect(firebloomParticles, firebloomSfx);
+                QueueVoiceLines(firebloomVoiceLines);
                 break;
-
             case IngredientType.DragonsTooth:
                 PlayEffect(dragonToothParticles, dragonToothSfx);
+                QueueVoiceLines(dragonToothVoiceLines);
                 break;
-
             default:
-                Debug.LogWarning($"No effect configured for ingredient: {type}");
+                Debug.LogWarning($"No effect or VO configured for {type}");
                 break;
         }
     }
 
-    /// <summary>
-    /// Called when the potion is fully brewed.
-    /// </summary>
     public void HandlePotionFinished()
     {
         PlayEffect(potionFinishedParticles, potionFinishedSfx);
+        QueueVoiceLines(potionFinishedVoiceLines);
     }
 
-    /// <summary>
-    /// Helper to play a particle system and an SFX.
-    /// </summary>
     private void PlayEffect(ParticleSystem ps, AudioClip clip)
     {
-        if (ps != null)
-            ps.Play();
+        if (ps != null) ps.Play();
+        if (clip != null) _audioSource.PlayOneShot(clip);
+    }
 
-        if (clip != null)
-            _audioSource.PlayOneShot(clip);
+    private void QueueVoiceLines(AudioClip[] clips)
+    {
+        if (clips == null) return;
+        foreach (var clip in clips)
+        {
+            if (clip == null) continue;
+            VoiceoverManager.Instance.QueueVoice(
+                clip,
+                delayAfter: voiceDelayAfter,
+                blockMovement: false
+            );
+        }
     }
 }

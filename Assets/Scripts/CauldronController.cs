@@ -9,8 +9,11 @@ public class CauldronController : MonoBehaviour
     [Tooltip("The spoon Transform to clamp & track.")]
     public Transform spoonTransform;
 
-    [Tooltip("A trigger Collider (set as 'Is Trigger') defining the stirring zone.")]
+    [Tooltip("Trigger Collider (Is Trigger) defining the stirring zone.")]
     public Collider stirZoneTrigger;
+
+    [Tooltip("Trigger Collider (Is Trigger) defining the ingredient drop zone.")]
+    public Collider ingredientZoneTrigger;
 
     [Header("Clamp Settings")]
     [Tooltip("Radius of the cylindrical zone (in local XZ)")]
@@ -37,59 +40,71 @@ public class CauldronController : MonoBehaviour
     // internal state
     bool isInStirZone = false;
     float previousAngle = 0f;
-    float accumulatedCW = 0f;   // degrees
-    float accumulatedCCW = 0f;  // degrees
-
+    float accumulatedCW = 0f, accumulatedCCW = 0f;
     int _nextCheckpointIndex = 0;
     int _ingredientsAddedCount = 0;
     bool _potionFinished = false;
 
     void Start()
     {
-        if (stirZoneTrigger == null || spoonTransform == null)
-            Debug.LogError("Assign stirZoneTrigger & spoonTransform on " + name);
-
-        if (stirZoneTrigger.gameObject != gameObject)
-            Debug.LogWarning("stirZoneTrigger likely should be on the same GameObject.");
+        if (stirZoneTrigger == null || ingredientZoneTrigger == null || spoonTransform == null)
+            Debug.LogError("Make sure stirZoneTrigger, ingredientZoneTrigger and spoonTransform are assigned on " + name);
     }
 
     void Update()
     {
         if (!isInStirZone) return;
-
         ClampSpoonPosition();
         TrackStirring();
     }
 
     void OnTriggerEnter(Collider other)
     {
+        // 1) Stirring zone entry
         if (other == stirZoneTrigger)
         {
             isInStirZone = true;
             previousAngle = GetCurrentHorizontalAngle();
+            Debug.Log("CauldronController: Spoon entered stir zone.");
+            return;
         }
-        else if (other.TryGetComponent<Ingredient>(out var ing))
+
+        // 2) Ingredient drop logic
+        if (other.TryGetComponent<Ingredient>(out var ing))
         {
-            // 1) Fire per-ingredient event
-            OnIngredientAdded.Invoke(ing.ingredientType);
-
-            // 2) Count and check for brew completion
-            _ingredientsAddedCount++;
-            if (!_potionFinished && _ingredientsAddedCount >= ingredientsRequired)
+            // only trigger if the ingredient is inside the ingredientZoneTrigger bounds
+            if (ingredientZoneTrigger.bounds.Contains(other.transform.position))
             {
-                _potionFinished = true;
-                OnPotionFinished?.Invoke();
-            }
+                if (ing.GetComponent<ProcessedMarker>() != null)
+                {
+                    Debug.Log($"CauldronController: {ing.name} already processed, ignoring.");
+                    return;
+                }
 
-            // 3) Remove the ingredient from the world
-            Destroy(other.gameObject);
+                ing.gameObject.AddComponent<ProcessedMarker>();
+                Debug.Log($"CauldronController: Processing ingredient {ing.name}");
+
+                OnIngredientAdded.Invoke(ing.ingredientType);
+                _ingredientsAddedCount++;
+
+                if (!_potionFinished && _ingredientsAddedCount >= ingredientsRequired)
+                {
+                    _potionFinished = true;
+                    OnPotionFinished?.Invoke();
+                }
+
+                Destroy(ing.gameObject, 0.1f);
+            }
         }
     }
 
     void OnTriggerExit(Collider other)
     {
         if (other == stirZoneTrigger)
+        {
             isInStirZone = false;
+            Debug.Log("CauldronController: Spoon exited stir zone.");
+        }
     }
 
     void ClampSpoonPosition()
@@ -98,33 +113,25 @@ public class CauldronController : MonoBehaviour
         Vector2 radiusVec = new Vector2(local.x, local.z);
         if (radiusVec.magnitude > clampRadius)
             radiusVec = radiusVec.normalized * clampRadius;
-
         local.x = radiusVec.x;
         local.z = radiusVec.y;
         local.y = Mathf.Clamp(local.y, minY, maxY);
-
         spoonTransform.position = transform.TransformPoint(local);
     }
 
     void TrackStirring()
     {
-        if (_nextCheckpointIndex >= stirCheckpoints.Length)
-            return; // no more checkpoints left
+        if (_nextCheckpointIndex >= stirCheckpoints.Length) return;
+        if (_nextCheckpointIndex >= _ingredientsAddedCount) return;
 
-        // Compute how far we've stirred since last frame
         float angle = GetCurrentHorizontalAngle();
         float delta = Mathf.DeltaAngle(previousAngle, angle);
         previousAngle = angle;
+        if (Mathf.Abs(delta) < rotationThresholdPerFrame) return;
 
-        if (Mathf.Abs(delta) < rotationThresholdPerFrame)
-            return;
+        if (delta < 0) accumulatedCW += -delta;
+        else accumulatedCCW += delta;
 
-        if (delta < 0)
-            accumulatedCW += -delta;
-        else
-            accumulatedCCW += delta;
-
-        // Check only the *next* checkpoint
         var cp = stirCheckpoints[_nextCheckpointIndex];
         float neededDeg = cp.requiredRotations * 360f;
         bool passed = (cp.direction == StirCheckpoint.Direction.Clockwise && accumulatedCW >= neededDeg)
@@ -133,7 +140,9 @@ public class CauldronController : MonoBehaviour
         if (passed)
         {
             cp.onCheckpointReached.Invoke();
+            Debug.Log($"CauldronController: Checkpoint {_nextCheckpointIndex} reached.");
             _nextCheckpointIndex++;
+            accumulatedCW = accumulatedCCW = 0f;  // reset for next step
         }
     }
 
@@ -143,37 +152,7 @@ public class CauldronController : MonoBehaviour
         return Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg;
     }
 
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.cyan;
-        Vector3 center = transform.position;
-        Vector3 bottom = center + Vector3.up * minY;
-        Vector3 top = center + Vector3.up * maxY;
-
-        DrawWireCircle(bottom, clampRadius);
-        DrawWireCircle(top, clampRadius);
-
-        Vector3[] dirs = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
-        foreach (var d in dirs)
-        {
-            Gizmos.DrawLine(bottom + d * clampRadius, top + d * clampRadius);
-        }
-    }
-
-    void DrawWireCircle(Vector3 center, float radius)
-    {
-        const int segments = 36;
-        float deltaTheta = 2f * Mathf.PI / segments;
-        Vector3 prev = center + new Vector3(radius, 0, 0);
-
-        for (int i = 1; i <= segments; i++)
-        {
-            float theta = i * deltaTheta;
-            Vector3 next = center + new Vector3(Mathf.Cos(theta) * radius, 0, Mathf.Sin(theta) * radius);
-            Gizmos.DrawLine(prev, next);
-            prev = next;
-        }
-    }
+    public class ProcessedMarker : MonoBehaviour { }
 }
 
 #region Supporting Types

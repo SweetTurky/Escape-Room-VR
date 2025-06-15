@@ -8,6 +8,7 @@ public class JarLidController : MonoBehaviour
     [Header("References")]
     [Tooltip("The XRGrabInteractable on the jar. Lid can only be grabbed when jar is held.")]
     public XRGrabInteractable jarGrabInteractable;
+    public GameObject jarParent;
 
     [Tooltip("The lid's own XRGrabInteractable.")]
     public XRGrabInteractable lidGrabInteractable;
@@ -84,31 +85,88 @@ public class JarLidController : MonoBehaviour
                 );
             }
         }
-        // Don’t touch lidGrabInteractable.enabled at all
+        lidGrabInteractable.enabled = false;
     }
 
-    void OnGrab(SelectEnterEventArgs args)
+    private void OnGrab(SelectEnterEventArgs args)
     {
-        // Immediately detach on first grab
-        if (!_detached)
+        if (_detached) return;
+        _detached = true;
+
+        if (jarParent != null)
         {
-            _detached = true;
+            Debug.Log($"JarGrabWatcher: Using specified jarParent '{jarParent.name}'.");
 
-            // Destroy the joint so lid is free
-            var joint = GetComponent<ConfigurableJoint>();
-            if (joint != null)
-                Destroy(joint);
+            Transform ingredientPoint = jarParent.transform.Find("IngredientPoint");
+            if (ingredientPoint != null)
+            {
+                Debug.Log($"JarGrabWatcher: Found IngredientPoint '{ingredientPoint.name}' with {ingredientPoint.childCount} child(ren).");
 
-            // Unparent the lid
-            transform.SetParent(null, true);
+                foreach (Transform ing in ingredientPoint)
+                {
+                    Debug.Log($"JarGrabWatcher: Preparing ingredient '{ing.name}'.");
 
-            // Play the pop-open sound once
-            if (detachSound != null)
-                _audioSource.PlayOneShot(detachSound);
+                    // Enable XRGrabInteractable on ingredient BEFORE deparenting
+                    var ingredientGrab = ing.GetComponent<XRGrabInteractable>();
+                    if (ingredientGrab != null)
+                    {
+                        ingredientGrab.enabled = true;
+                        Debug.Log($"JarGrabWatcher: Enabled XRGrabInteractable on '{ing.name}'.");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"JarGrabWatcher: No XRGrabInteractable found on '{ing.name}'.");
+                    }
 
-            // Ensure lid remains grabbable after detachment
-            if (lidGrabInteractable != null)
-                lidGrabInteractable.enabled = true;
+                    // Deparent ingredient
+                    ing.SetParent(null, true);
+                    Debug.Log($"JarGrabWatcher: '{ing.name}' now detached and parent is '{ing.parent?.name ?? "null"}'.");
+
+                    // Enable physics on the ingredient
+                    var rb = ing.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.isKinematic = false;
+                        rb.detectCollisions = true;
+                        Debug.Log($"JarGrabWatcher: Physics re-enabled on '{ing.name}'.");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"JarGrabWatcher: No Rigidbody found on '{ing.name}'.");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"JarGrabWatcher: 'IngredientPoint' not found under '{jarParent.name}'.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("JarGrabWatcher: jarParent reference not assigned.");
+        }
+
+        // Now detach the lid
+        var joint = GetComponent<ConfigurableJoint>();
+        if (joint != null)
+        {
+            Destroy(joint);
+            Debug.Log("JarGrabWatcher: ConfigurableJoint destroyed on lid.");
+        }
+
+        transform.SetParent(null, true);
+        Debug.Log("JarGrabWatcher: Lid unparented.");
+
+        if (detachSound != null)
+        {
+            _audioSource.PlayOneShot(detachSound);
+            Debug.Log("JarGrabWatcher: Played lid detach sound.");
+        }
+
+        if (lidGrabInteractable != null)
+        {
+            lidGrabInteractable.enabled = true;
+            Debug.Log("JarGrabWatcher: Lid remains grabbable after detachment.");
         }
     }
 }

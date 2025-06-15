@@ -2,6 +2,9 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class GameStartController : MonoBehaviour
 {
@@ -232,14 +235,24 @@ public class GameStartController : MonoBehaviour
         // 3) Spawn the next ingredient: FirebloomPetals (index 1)
         //ingredientSpawner.SpawnJarWithIngredient(2);
 
-        // 4) Queue the remaining lines
-        for (int i = 1; i < postThirdStepClips.Length; i++)
-        {
-            VoiceoverManager.Instance.QueueVoice(
-                postThirdStepClips[i],
-                delayAfter: 0.5f,
-                blockMovement: false
-            );
-        }
+        /* // 4) Queue the remaining lines
+         for (int i = 1; i < postThirdStepClips.Length; i++)
+         {
+             VoiceoverManager.Instance.QueueVoice(
+                 postThirdStepClips[i],
+                 delayAfter: 0.5f,
+                 blockMovement: false
+             );
+         }*/
+
+        fadeController.FadeOut(3f);
+        yield return new WaitForSeconds(4f);
+
+        // In a standalone build this quits; in the Editor it stops Play mode
+#if UNITY_EDITOR
+        EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }
