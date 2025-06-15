@@ -7,15 +7,19 @@ public class CauldronEffects : MonoBehaviour
     [Tooltip("Drag your CauldronController here")]
     public CauldronController cauldron;
 
-    [Header("Particle Effects")]
+    [Header("Ingredient Particle Effects")]
     public ParticleSystem wormParticles;          // e.g. for DriedEarthWorms
     public ParticleSystem firebloomParticles;     // e.g. for FirebloomPetals
     public ParticleSystem dragonToothParticles;   // for DragonsTooth
 
-    [Header("Audio Clips")]
+    [Header("Ingredient Audio Clips")]
     public AudioClip wormSfx;
     public AudioClip firebloomSfx;
     public AudioClip dragonToothSfx;
+
+    [Header("Potion Finished Effect")]
+    public ParticleSystem potionFinishedParticles;
+    public AudioClip potionFinishedSfx;
 
     private AudioSource _audioSource;
 
@@ -28,20 +32,25 @@ public class CauldronEffects : MonoBehaviour
     private void OnEnable()
     {
         if (cauldron != null)
+        {
             cauldron.OnIngredientAdded.AddListener(HandleIngredient);
+            cauldron.OnPotionFinished.AddListener(HandlePotionFinished);
+        }
     }
 
     private void OnDisable()
     {
         if (cauldron != null)
+        {
             cauldron.OnIngredientAdded.RemoveListener(HandleIngredient);
+            cauldron.OnPotionFinished.RemoveListener(HandlePotionFinished);
+        }
     }
 
     /// <summary>
     /// Called whenever the CauldronController invokes OnIngredientAdded.
     /// Plays a different effect based on the ingredient type.
     /// </summary>
-    /// <param name="type">The IngredientType that was added.</param>
     public void HandleIngredient(IngredientType type)
     {
         switch (type)
@@ -62,6 +71,14 @@ public class CauldronEffects : MonoBehaviour
                 Debug.LogWarning($"No effect configured for ingredient: {type}");
                 break;
         }
+    }
+
+    /// <summary>
+    /// Called when the potion is fully brewed.
+    /// </summary>
+    public void HandlePotionFinished()
+    {
+        PlayEffect(potionFinishedParticles, potionFinishedSfx);
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -22,19 +21,28 @@ public class CauldronController : MonoBehaviour
     [Header("Stirring Settings")]
     [Tooltip("Ignore tiny jitters under this degree delta")]
     public float rotationThresholdPerFrame = 0.5f;
-    [Tooltip("Define any number of checkpoints here")]
+    [Tooltip("Define any number of checkpoints here (in the order they must fire)")]
     public StirCheckpoint[] stirCheckpoints;
 
     [Header("Ingredient Settings")]
     [Tooltip("Fires when an ingredient is added")]
     public IngredientAddedEvent OnIngredientAdded;
 
+    [Header("Potion Settings")]
+    [Tooltip("How many ingredients complete the brew")]
+    public int ingredientsRequired = 3;
+    [Tooltip("Fires once when the potion is fully brewed")]
+    public UnityEvent OnPotionFinished;
+
     // internal state
     bool isInStirZone = false;
     float previousAngle = 0f;
     float accumulatedCW = 0f;   // degrees
     float accumulatedCCW = 0f;  // degrees
-    HashSet<StirCheckpoint> triggered = new HashSet<StirCheckpoint>();
+
+    int _nextCheckpointIndex = 0;
+    int _ingredientsAddedCount = 0;
+    bool _potionFinished = false;
 
     void Start()
     {
@@ -62,7 +70,18 @@ public class CauldronController : MonoBehaviour
         }
         else if (other.TryGetComponent<Ingredient>(out var ing))
         {
+            // 1) Fire per-ingredient event
             OnIngredientAdded.Invoke(ing.ingredientType);
+
+            // 2) Count and check for brew completion
+            _ingredientsAddedCount++;
+            if (!_potionFinished && _ingredientsAddedCount >= ingredientsRequired)
+            {
+                _potionFinished = true;
+                OnPotionFinished?.Invoke();
+            }
+
+            // 3) Remove the ingredient from the world
             Destroy(other.gameObject);
         }
     }
@@ -89,31 +108,32 @@ public class CauldronController : MonoBehaviour
 
     void TrackStirring()
     {
+        if (_nextCheckpointIndex >= stirCheckpoints.Length)
+            return; // no more checkpoints left
+
+        // Compute how far we've stirred since last frame
         float angle = GetCurrentHorizontalAngle();
         float delta = Mathf.DeltaAngle(previousAngle, angle);
         previousAngle = angle;
 
-        if (Mathf.Abs(delta) < rotationThresholdPerFrame) return;
+        if (Mathf.Abs(delta) < rotationThresholdPerFrame)
+            return;
 
         if (delta < 0)
             accumulatedCW += -delta;
         else
             accumulatedCCW += delta;
 
-        foreach (var cp in stirCheckpoints)
+        // Check only the *next* checkpoint
+        var cp = stirCheckpoints[_nextCheckpointIndex];
+        float neededDeg = cp.requiredRotations * 360f;
+        bool passed = (cp.direction == StirCheckpoint.Direction.Clockwise && accumulatedCW >= neededDeg)
+                   || (cp.direction == StirCheckpoint.Direction.CounterClockwise && accumulatedCCW >= neededDeg);
+
+        if (passed)
         {
-            if (triggered.Contains(cp)) continue;
-            float degNeeded = cp.requiredRotations * 360f;
-            if (cp.direction == StirCheckpoint.Direction.Clockwise && accumulatedCW >= degNeeded)
-            {
-                cp.onCheckpointReached.Invoke();
-                triggered.Add(cp);
-            }
-            else if (cp.direction == StirCheckpoint.Direction.CounterClockwise && accumulatedCCW >= degNeeded)
-            {
-                cp.onCheckpointReached.Invoke();
-                triggered.Add(cp);
-            }
+            cp.onCheckpointReached.Invoke();
+            _nextCheckpointIndex++;
         }
     }
 
@@ -123,43 +143,35 @@ public class CauldronController : MonoBehaviour
         return Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg;
     }
 
-    // Draw clamp gizmos in editor
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
         Vector3 center = transform.position;
-
-        // Draw bottom circle at minY
         Vector3 bottom = center + Vector3.up * minY;
-        DrawWireCircle(bottom, clampRadius);
-
-        // Draw top circle at maxY
         Vector3 top = center + Vector3.up * maxY;
+
+        DrawWireCircle(bottom, clampRadius);
         DrawWireCircle(top, clampRadius);
 
-        // Draw vertical lines at cardinal directions
         Vector3[] dirs = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
         foreach (var d in dirs)
         {
-            Vector3 start = bottom + d * clampRadius;
-            Vector3 end = top + d * clampRadius;
-            Gizmos.DrawLine(start, end);
+            Gizmos.DrawLine(bottom + d * clampRadius, top + d * clampRadius);
         }
     }
 
-    // Helper to draw a horizontal wire circle
     void DrawWireCircle(Vector3 center, float radius)
     {
         const int segments = 36;
         float deltaTheta = 2f * Mathf.PI / segments;
-        Vector3 prevPoint = center + new Vector3(radius, 0, 0);
+        Vector3 prev = center + new Vector3(radius, 0, 0);
 
         for (int i = 1; i <= segments; i++)
         {
             float theta = i * deltaTheta;
-            Vector3 nextPoint = center + new Vector3(Mathf.Cos(theta) * radius, 0, Mathf.Sin(theta) * radius);
-            Gizmos.DrawLine(prevPoint, nextPoint);
-            prevPoint = nextPoint;
+            Vector3 next = center + new Vector3(Mathf.Cos(theta) * radius, 0, Mathf.Sin(theta) * radius);
+            Gizmos.DrawLine(prev, next);
+            prev = next;
         }
     }
 }
@@ -177,6 +189,5 @@ public class StirCheckpoint
 
 [Serializable]
 public class IngredientAddedEvent : UnityEvent<IngredientType> { }
-
 
 #endregion

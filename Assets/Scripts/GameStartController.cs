@@ -17,6 +17,18 @@ public class GameStartController : MonoBehaviour
     public AudioClip[] continueClips;
     public AudioClip wormIntroClip;
 
+    [Header("After First Ingredient & Stir")]
+    [Tooltip("Voice lines to play once the first ingredient is added AND you've hit the stir-checkpoint.")]
+    public AudioClip[] postFirstStepClips;
+
+    [Header("After Second Ingredient & Stir")]
+    [Tooltip("Voice lines to play once the second ingredient is added AND you've hit the stir-checkpoint.")]
+    public AudioClip[] postSecondStepClips;
+
+    [Header("After 3rd Ingredient & Stir")]
+    [Tooltip("Voice lines to play once the third ingredient is added AND you've hit the stir-checkpoint.")]
+    public AudioClip[] postThirdStepClips;
+
     // internal state
     private IXRMovementBlockable _blocker;
     private bool _skipAvailable;
@@ -124,5 +136,110 @@ public class GameStartController : MonoBehaviour
         VoiceoverManager.Instance.QueueVoice(wormIntroClip, blockMovement: false);
         yield return new WaitForSeconds(1f);
         ingredientSpawner.SpawnJarWithIngredient(0);
+    }
+
+    /// <summary>
+    /// Hook this up to your CauldronController's OnIngredientAdded+stir-checkpoint event.
+    /// </summary>
+    public void OnFirstIngredientAndStirComplete()
+    {
+        StartCoroutine(PostFirstStepSequence());
+    }
+
+    public void OnSecondIngredientAndStirComplete()
+    {
+        StartCoroutine(PostSecondStepSequence());
+    }
+
+    public void OnThirdIngredientAndStirComplete()
+    {
+        StartCoroutine(PostThirdStepSequence());
+    }
+
+    private IEnumerator PostFirstStepSequence()
+    {
+        if (postFirstStepClips == null || postFirstStepClips.Length == 0)
+            yield break;
+
+        // 1) Play the first line
+        VoiceoverManager.Instance.QueueVoice(
+            postFirstStepClips[0],
+            delayAfter: 0.5f,
+            blockMovement: false
+        );
+
+        // 2) Wait until that clip is done
+        yield return new WaitUntil(() => VoiceoverManager.Instance.IsIdle);
+
+        // 3) Spawn the next ingredient: FirebloomPetals (index 1)
+        ingredientSpawner.SpawnJarWithIngredient(1);
+
+        // 4) Queue the remaining lines
+        for (int i = 1; i < postFirstStepClips.Length; i++)
+        {
+            VoiceoverManager.Instance.QueueVoice(
+                postFirstStepClips[i],
+                delayAfter: 0.5f,
+                blockMovement: false
+            );
+        }
+    }
+
+    private IEnumerator PostSecondStepSequence()
+    {
+        if (postSecondStepClips == null || postSecondStepClips.Length == 0)
+            yield break;
+
+        // 1) Play the first line
+        VoiceoverManager.Instance.QueueVoice(
+            postSecondStepClips[0],
+            delayAfter: 0.5f,
+            blockMovement: false
+        );
+
+        // 2) Wait until that clip is done
+        yield return new WaitUntil(() => VoiceoverManager.Instance.IsIdle);
+
+        // 3) Spawn the next ingredient: FirebloomPetals (index 1)
+        ingredientSpawner.SpawnJarWithIngredient(2);
+
+        // 4) Queue the remaining lines
+        for (int i = 1; i < postSecondStepClips.Length; i++)
+        {
+            VoiceoverManager.Instance.QueueVoice(
+                postSecondStepClips[i],
+                delayAfter: 0.5f,
+                blockMovement: false
+            );
+        }
+    }
+
+    private IEnumerator PostThirdStepSequence()
+    {
+        if (postThirdStepClips == null || postThirdStepClips.Length == 0)
+            yield break;
+
+        // 1) Play the first line
+        VoiceoverManager.Instance.QueueVoice(
+            postThirdStepClips[0],
+            delayAfter: 0.5f,
+            blockMovement: false
+        );
+
+        // 2) Wait until that clip is done
+        yield return new WaitUntil(() => VoiceoverManager.Instance.IsIdle);
+
+        // 3) Spawn the next ingredient: FirebloomPetals (index 1)
+        //ingredientSpawner.SpawnJarWithIngredient(2);
+
+        // 4) Queue the remaining lines
+        for (int i = 1; i < postThirdStepClips.Length; i++)
+        {
+            VoiceoverManager.Instance.QueueVoice(
+                postThirdStepClips[i],
+                delayAfter: 0.5f,
+                blockMovement: false
+            );
+        }
     }
 }
