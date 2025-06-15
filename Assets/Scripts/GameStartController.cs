@@ -219,6 +219,7 @@ public class GameStartController : MonoBehaviour
 
     private IEnumerator PostThirdStepSequence()
     {
+        
         if (postThirdStepClips == null || postThirdStepClips.Length == 0)
             yield break;
 

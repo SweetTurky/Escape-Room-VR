@@ -40,8 +40,8 @@ public class CauldronEffects : MonoBehaviour
 
     private void OnEnable()
     {
-        cauldron.OnIngredientAdded.AddListener(HandleIngredient);
-        cauldron.OnPotionFinished.AddListener(HandlePotionFinished);
+        //cauldron.OnIngredientAdded.AddListener(HandleIngredient);
+        //cauldron.OnPotionFinished.AddListener(HandlePotionFinished);
     }
 
     private void OnDisable()
@@ -77,13 +77,13 @@ public class CauldronEffects : MonoBehaviour
     public void HandlePotionFinished()
     {
         PlayEffect(potionFinishedParticles, potionFinishedSfx);
-        QueueVoiceLines(potionFinishedVoiceLines);
+        //QueueVoiceLines(potionFinishedVoiceLines);
     }
 
     private void PlayEffect(ParticleSystem ps, AudioClip clip)
     {
         if (ps != null) ps.Play();
-        if (clip != null) _audioSource.PlayOneShot(clip);
+        if (clip != null) _audioSource.PlayOneShot(clip, 0.5f);
     }
 
     private void QueueVoiceLines(AudioClip[] clips)

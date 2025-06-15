@@ -60,13 +60,12 @@ public class CauldronController : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // 1) Stirring zone entry
-        if (other == stirZoneTrigger)
+        // Detect the spoon entering by checking its layer
+        if (other.gameObject.layer == LayerMask.NameToLayer("Spoon"))
         {
             isInStirZone = true;
             previousAngle = GetCurrentHorizontalAngle();
-            Debug.Log("CauldronController: Spoon entered stir zone.");
-            return;
+            Debug.Log("Spoon entered stir zone.");
         }
 
         // 2) Ingredient drop logic
@@ -87,11 +86,11 @@ public class CauldronController : MonoBehaviour
                 OnIngredientAdded.Invoke(ing.ingredientType);
                 _ingredientsAddedCount++;
 
-                if (!_potionFinished && _ingredientsAddedCount >= ingredientsRequired)
+                /*if (!_potionFinished && _ingredientsAddedCount >= ingredientsRequired)
                 {
                     _potionFinished = true;
                     OnPotionFinished?.Invoke();
-                }
+                }*/
 
                 Destroy(ing.gameObject, 0.1f);
             }
@@ -100,10 +99,10 @@ public class CauldronController : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        if (other == stirZoneTrigger)
+        if (other.gameObject.layer == LayerMask.NameToLayer("Spoon"))
         {
             isInStirZone = false;
-            Debug.Log("CauldronController: Spoon exited stir zone.");
+            Debug.Log("Spoon exited stir zone.");
         }
     }
 
@@ -127,22 +126,32 @@ public class CauldronController : MonoBehaviour
         float angle = GetCurrentHorizontalAngle();
         float delta = Mathf.DeltaAngle(previousAngle, angle);
         previousAngle = angle;
+
+        Debug.Log($"Angle delta: {delta}");
+
         if (Mathf.Abs(delta) < rotationThresholdPerFrame) return;
 
-        if (delta < 0) accumulatedCW += -delta;
-        else accumulatedCCW += delta;
+        if (delta < 0)
+            accumulatedCW += -delta;
+        else
+            accumulatedCCW += delta;
+
+        Debug.Log($"CW: {accumulatedCW}, CCW: {accumulatedCCW}");
 
         var cp = stirCheckpoints[_nextCheckpointIndex];
         float neededDeg = cp.requiredRotations * 360f;
-        bool passed = (cp.direction == StirCheckpoint.Direction.Clockwise && accumulatedCW >= neededDeg)
-                   || (cp.direction == StirCheckpoint.Direction.CounterClockwise && accumulatedCCW >= neededDeg);
+
+        bool passed = (cp.direction == StirCheckpoint.Direction.CounterClockwise && accumulatedCW >= neededDeg)
+                   || (cp.direction == StirCheckpoint.Direction.Clockwise && accumulatedCCW >= neededDeg);
 
         if (passed)
         {
             cp.onCheckpointReached.Invoke();
-            Debug.Log($"CauldronController: Checkpoint {_nextCheckpointIndex} reached.");
+            Debug.Log($"Checkpoint {_nextCheckpointIndex} reached.");
             _nextCheckpointIndex++;
-            accumulatedCW = accumulatedCCW = 0f;  // reset for next step
+
+            // Reset accumulators after checkpoint reached (optional but usually good)
+            accumulatedCW = accumulatedCCW = 0f;
         }
     }
 

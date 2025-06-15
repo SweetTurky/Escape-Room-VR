@@ -13,8 +13,8 @@ public class JarGrabWatcher : MonoBehaviour
 
     private XRGrabInteractable _grab;
 
-    // Static flag ensures this is executed only once across all instances
-    private static bool _stationActivated = false;
+    // flag ensures this is executed only once across all instances
+    private bool _stationActivated = false;
 
     private void Start()
     {
@@ -40,7 +40,7 @@ public class JarGrabWatcher : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Reset the static flag if needed (only if you want to reset when jars are destroyed)
+        // Reset the flag if needed (only if you want to reset when jars are destroyed)
         //_stationActivated = false; // Uncomment only if resetting is desired upon destruction
     }
 }
